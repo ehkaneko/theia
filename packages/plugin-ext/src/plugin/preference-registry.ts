@@ -85,7 +85,7 @@ export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
         this._preferences = this.parse(data);
     }
 
-    $acceptConfigurationChanged(data: PreferenceData, eventData: PreferenceChangeExt): void {
+    $acceptConfigurationChanged(data: PreferenceData, eventData: PreferenceChangeExt[]): void {
         this.init(data);
         this._onDidChangeConfiguration.fire(this.toConfigurationChangeEvent(eventData));
     }
@@ -161,13 +161,13 @@ export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
                     return this.proxy.$removeConfigurationOption(arg, key, resourceStr);
                 }
             },
-            inspect: <T>(key: string): ConfigurationInspect<T> => {
+            inspect: <T>(key: string): ConfigurationInspect<T> | undefined => {
                 key = section ? `${section}.${key}` : key;
                 resource = resource === null ? undefined : resource;
                 const result = cloneDeep(this._preferences.inspect<T>(key, this.workspace, resource));
 
                 if (!result) {
-                    return undefined!;
+                    return undefined;
                 }
 
                 const configInspect: ConfigurationInspect<T> = { key };
@@ -253,14 +253,19 @@ export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
         }, {});
     }
 
-    private toConfigurationChangeEvent(eventData: PreferenceChangeExt): theia.ConfigurationChangeEvent {
+    private toConfigurationChangeEvent(eventData: PreferenceChangeExt[]): theia.ConfigurationChangeEvent {
         return Object.freeze({
             affectsConfiguration: (section: string, uri?: theia.Uri): boolean => {
-                const tree = eventData.preferenceName
-                    .split('.')
-                    .reverse()
-                    .reduce((prevValue: any, curValue: any) => ({ [curValue]: prevValue }), eventData.newValue);
-                return !!lookUp(tree, section);
+                // TODO respect uri
+                // TODO respect scopes shadowing
+                for (const change of eventData) {
+                    const tree = change.preferenceName
+                        .split('.')
+                        .reverse()
+                        .reduce((prevValue: any, curValue: any) => ({ [curValue]: prevValue }), change.newValue);
+                    return typeof lookUp(tree, section) !== 'undefined';
+                }
+                return false;
             }
         });
     }

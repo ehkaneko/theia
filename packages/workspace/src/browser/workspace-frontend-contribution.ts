@@ -58,34 +58,28 @@ export class WorkspaceFrontendContribution implements CommandContribution, Keybi
     registerCommands(commands: CommandRegistry): void {
         // Not visible/enabled on Windows/Linux in electron.
         commands.registerCommand(WorkspaceCommands.OPEN, {
-            isEnabled: () => isOSX || !this.isElectron(),
-            isVisible: () => isOSX || !this.isElectron(),
-            execute: () => this.doOpen()
+            isEnabled: () => false,
+            isVisible: () => isOSX || !this.isElectron()
         });
         // Visible/enabled only on Windows/Linux in electron.
         commands.registerCommand(WorkspaceCommands.OPEN_FILE, {
-            isEnabled: () => true,
-            execute: () => this.doOpenFile()
+            isEnabled: () => false
         });
         // Visible/enabled only on Windows/Linux in electron.
         commands.registerCommand(WorkspaceCommands.OPEN_FOLDER, {
-            isEnabled: () => true,
-            execute: () => this.doOpenFolder()
+            isEnabled: () => false
         });
         commands.registerCommand(WorkspaceCommands.OPEN_WORKSPACE, {
-            isEnabled: () => true,
-            execute: () => this.doOpenWorkspace()
+            isEnabled: () => false
         });
         commands.registerCommand(WorkspaceCommands.CLOSE, {
-            isEnabled: () => this.workspaceService.opened,
-            execute: () => this.closeWorkspace()
+            isEnabled: () => false
         });
         commands.registerCommand(WorkspaceCommands.OPEN_RECENT_WORKSPACE, {
-            execute: () => this.quickOpenWorkspace.select()
+            isEnabled: () => false
         });
         commands.registerCommand(WorkspaceCommands.SAVE_WORKSPACE_AS, {
-            isEnabled: () => this.workspaceService.isMultiRootWorkspaceOpened,
-            execute: () => this.saveWorkspaceAs()
+            isEnabled: () => false
         });
     }
 

@@ -368,7 +368,7 @@ export class TerminalFrontendContribution implements TerminalService, CommandCon
         const cwd = await this.selectTerminalCwd();
         const termWidget = await this.newTerminal({ cwd });
         termWidget.start();
-        termWidget.sendText("octave");
+        termWidget.sendText('octave');
         this.open(termWidget, { widgetOptions: options });
     }
 

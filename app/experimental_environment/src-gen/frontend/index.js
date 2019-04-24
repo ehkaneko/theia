@@ -10,7 +10,7 @@ const { ThemeService } = require('@theia/core/lib/browser/theming');
 const { FrontendApplicationConfigProvider } = require('@theia/core/lib/browser/frontend-application-config-provider');
 
 FrontendApplicationConfigProvider.set({
-    "applicationName": "Theia Browser Example"
+    "applicationName": "Virtual and Remote Laboratory"
 });
 
 const container = new Container();
@@ -59,16 +59,14 @@ module.exports = Promise.resolve()
     .then(function () { return import('@theia/editor-preview/lib/browser/editor-preview-frontend-module').then(load) })
     .then(function () { return import('@theia/editorconfig/lib/browser/editorconfig-frontend-module').then(load) })
     .then(function () { return import('@theia/extension-manager/lib/browser/extension-frontend-module').then(load) })
-    .then(function () { return import('@theia/file-search/lib/browser/file-search-frontend-module').then(load) })
     .then(function () { return import('@theia/keymaps/lib/browser/keymaps-frontend-module').then(load) })
     .then(function () { return import('@theia/getting-started/lib/browser/getting-started-frontend-module').then(load) })
-    .then(function () { return import('@theia/git/lib/browser/git-frontend-module').then(load) })
-    .then(function () { return import('@theia/git/lib/browser/prompt/git-prompt-module').then(load) })
     .then(function () { return import('@theia/java/lib/browser/java-frontend-module').then(load) })
     .then(function () { return import('@theia/java-debug/lib/browser/java-debug-frontend-module').then(load) })
     .then(function () { return import('@theia/merge-conflicts/lib/browser/merge-conflicts-frontend-module').then(load) })
     .then(function () { return import('@theia/messages/lib/browser/messages-frontend-module').then(load) })
     .then(function () { return import('@theia/mini-browser/lib/browser/mini-browser-frontend-module').then(load) })
+    .then(function () { return import('@theia/file-search/lib/browser/file-search-frontend-module').then(load) })
     .then(function () { return import('@theia/search-in-workspace/lib/browser/search-in-workspace-frontend-module').then(load) })
     .then(function () { return import('@theia/plugin-ext/lib/plugin-ext-frontend-module').then(load) })
     .then(function () { return import('@theia/plugin-ext-vscode/lib/browser/plugin-vscode-frontend-module').then(load) })

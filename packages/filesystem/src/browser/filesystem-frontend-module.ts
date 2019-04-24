@@ -29,6 +29,7 @@ import { bindFileSystemPreferences } from './filesystem-preferences';
 import { FileSystemWatcher } from './filesystem-watcher';
 import { FileSystemFrontendContribution } from './filesystem-frontend-contribution';
 import { FileSystemProxyFactory } from './filesystem-proxy-factory';
+import { MimeUpdater } from './mime-updater';
 
 export default new ContainerModule(bind => {
     bindFileSystemPreferences(bind);
@@ -58,4 +59,7 @@ export default new ContainerModule(bind => {
     bind(ResourceResolver).toService(FileResourceResolver);
 
     bind(FrontendApplicationContribution).to(FileSystemFrontendContribution).inSingletonScope();
+
+    bind(MimeUpdater).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).to(MimeUpdater).inSingletonScope();
 });

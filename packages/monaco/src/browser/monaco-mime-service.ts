@@ -14,25 +14,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { MimeService, FileSystemAssociationsConfiguration } from '@theia/core/lib/browser/mime-service';
-import { PreferenceService } from '@theia/core/lib/browser/preferences/preference-service';
-import { inject, injectable } from 'inversify';
+import { MimeAssociation, MimeService } from '@theia/core/lib/browser/mime-service';
+import { injectable } from 'inversify';
 
 @injectable()
 export class MonacoMimeService extends MimeService {
-    @inject(PreferenceService)
-    protected readonly preferenceService: PreferenceService;
 
-    protected updateMime(): void {
+    setAssociations(associations: MimeAssociation[]): void {
         monaco.mime.clearTextMimes(true);
 
-        const associations = this.preferenceService.get('files.associations') as FileSystemAssociationsConfiguration['files.associations'];
-        if (associations) {
-            Object.keys(associations).forEach(pattern => {
-                const langId = associations[pattern];
-                const mimetype = this.getMimeForMode(langId) || `text/x-${langId}`;
-                monaco.mime.registerTextMime({ id: langId, mime: mimetype, filepattern: pattern, userConfigured: true }, false);
-            });
+        for (const association of associations) {
+            const mimetype = this.getMimeForMode(association.id) || `text/x-${association.id}`;
+            monaco.mime.registerTextMime({ id: association.id, mime: mimetype, filepattern: association.filepattern, userConfigured: true }, false);
         }
     }
 

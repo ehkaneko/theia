@@ -41,7 +41,7 @@ export interface TabBarToolbarFactory {
 export class TabBarToolbar extends ReactWidget {
 
     protected current: Widget | undefined;
-    protected items = new Map<string, TabBarToolbarItem>();
+    protected items = new Map<string, TabBarToolbarItem | ReactTabBarToolbarItem>();
 
     constructor(protected readonly commands: CommandRegistry, protected readonly labelParser: LabelParser) {
         super();
@@ -49,7 +49,7 @@ export class TabBarToolbar extends ReactWidget {
         this.hide();
     }
 
-    updateItems(items: TabBarToolbarItem[], current: Widget | undefined): void {
+    updateItems(items: Array<TabBarToolbarItem | ReactTabBarToolbarItem>, current: Widget | undefined): void {
         this.items = new Map(items.sort(TabBarToolbarItem.PRIORITY_COMPARATOR).reverse().map(item => [item.id, item] as [string, TabBarToolbarItem]));
         this.current = current;
         if (!this.items.size) {
@@ -65,7 +65,7 @@ export class TabBarToolbar extends ReactWidget {
 
     protected render(): React.ReactNode {
         return <React.Fragment>
-            {[...this.items.values()].map(item => this.renderItem(item))}
+            {[...this.items.values()].map(item => TabBarToolbarItem.is(item) ? this.renderItem(item) : item.node)}
         </React.Fragment>;
     }
 
@@ -100,7 +100,7 @@ export class TabBarToolbar extends ReactWidget {
 
     protected executeCommand = (e: React.MouseEvent<HTMLElement>) => {
         const item = this.items.get(e.currentTarget.id);
-        if (item) {
+        if (TabBarToolbarItem.is(item)) {
             this.commands.executeCommand(item.command, this.current);
         }
     }
@@ -187,6 +187,24 @@ export interface TabBarToolbarItem {
 
 }
 
+/**
+ * Tab-bar toolbar item backed by a `React.ReactNode`.
+ * Unlike the `TabBarToolbarItem`, this item is not connected to the command service.
+ */
+export interface ReactTabBarToolbarItem {
+    readonly id: string;
+    readonly node: React.ReactNode;
+
+    // For the rest, see `TabBarToolbarItem`.
+    // For conditional visibility.
+    isVisible?(widget: Widget): boolean;
+    readonly when?: string;
+
+    // Ordering and grouping.
+    readonly priority?: number;
+    readonly group?: string;
+}
+
 export namespace TabBarToolbarItem {
 
     /**
@@ -218,6 +236,11 @@ export namespace TabBarToolbarItem {
         return (left.priority || 0) - (right.priority || 0);
     };
 
+    export function is(arg: Object | undefined): arg is TabBarToolbarItem {
+        // tslint:disable-next-line:no-any
+        return !!arg && 'command' in arg && typeof (arg as any).command === 'string';
+    }
+
 }
 
 /**
@@ -226,7 +249,7 @@ export namespace TabBarToolbarItem {
 @injectable()
 export class TabBarToolbarRegistry implements FrontendApplicationContribution {
 
-    protected items: Map<string, TabBarToolbarItem> = new Map();
+    protected items: Map<string, TabBarToolbarItem | ReactTabBarToolbarItem> = new Map();
 
     @inject(CommandRegistry)
     protected readonly commandRegistry: CommandRegistry;
@@ -255,14 +278,14 @@ export class TabBarToolbarRegistry implements FrontendApplicationContribution {
      *
      * @param item the item to register.
      */
-    registerItem(item: TabBarToolbarItem): void {
+    registerItem(item: TabBarToolbarItem | ReactTabBarToolbarItem): void {
         const { id } = item;
         if (this.items.has(id)) {
             throw new Error(`A toolbar item is already registered with the '${id}' ID.`);
         }
         this.items.set(id, item);
         this.fireOnDidChange();
-        if (item.onDidChange) {
+        if (TabBarToolbarItem.is(item) && item.onDidChange) {
             item.onDidChange(() => this.fireOnDidChange());
         }
     }
@@ -272,11 +295,13 @@ export class TabBarToolbarRegistry implements FrontendApplicationContribution {
      *
      * By default returns with all items where the command is enabled and `item.isVisible` is `true`.
      */
-    visibleItems(widget: Widget): TabBarToolbarItem[] {
+    visibleItems(widget: Widget): Array<TabBarToolbarItem | ReactTabBarToolbarItem> {
         const result = [];
         for (const item of this.items.values()) {
-            if (this.commandRegistry.isVisible(item.command, widget) &&
-                (!item.when || this.contextKeyService.match(item.when, widget.node))) {
+            const visible = TabBarToolbarItem.is(item)
+                ? this.commandRegistry.isVisible(item.command, widget)
+                : (!item.isVisible || item.isVisible(widget));
+            if (visible && (!item.when || this.contextKeyService.match(item.when, widget.node))) {
                 result.push(item);
             }
         }

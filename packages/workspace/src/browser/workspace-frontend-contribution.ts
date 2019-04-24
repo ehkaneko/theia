@@ -59,27 +59,34 @@ export class WorkspaceFrontendContribution implements CommandContribution, Keybi
         // Not visible/enabled on Windows/Linux in electron.
         commands.registerCommand(WorkspaceCommands.OPEN, {
             isEnabled: () => false,
-            isVisible: () => isOSX || !this.isElectron()
+            isVisible: () => isOSX || !this.isElectron(),
+            execute: () => this.doOpen()
         });
         // Visible/enabled only on Windows/Linux in electron.
         commands.registerCommand(WorkspaceCommands.OPEN_FILE, {
-            isEnabled: () => false
+            isEnabled: () => false,
+            execute: () => this.doOpenFile()
         });
         // Visible/enabled only on Windows/Linux in electron.
         commands.registerCommand(WorkspaceCommands.OPEN_FOLDER, {
-            isEnabled: () => false
+            isEnabled: () => false,
+            execute: () => this.doOpenFolder()
         });
         commands.registerCommand(WorkspaceCommands.OPEN_WORKSPACE, {
-            isEnabled: () => false
+            isEnabled: () => false,
+            execute: () => this.doOpenWorkspace()
         });
         commands.registerCommand(WorkspaceCommands.CLOSE, {
-            isEnabled: () => false
+            isEnabled: () => false,
+            execute: () => this.closeWorkspace()
         });
         commands.registerCommand(WorkspaceCommands.OPEN_RECENT_WORKSPACE, {
-            isEnabled: () => false
+            isEnabled: () => false,
+            execute: () => this.quickOpenWorkspace.select()
         });
         commands.registerCommand(WorkspaceCommands.SAVE_WORKSPACE_AS, {
-            isEnabled: () => false
+            isEnabled: () => false,
+            execute: () => this.saveWorkspaceAs()
         });
     }
 
